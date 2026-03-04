@@ -69,7 +69,7 @@ func (m ServiceWatchModel) View() string {
 
 	header := StyleHeader.Width(m.width).Render(" Service Monitor")
 
-	var rows []string
+	rows := make([]string, 0, len(m.services)+4)
 	rows = append(rows, "")
 	rows = append(rows, fmt.Sprintf("  %-20s %-15s %-8s %s", "NAME", "HOST:PORT", "STATUS", "LAST CHECK"))
 	rows = append(rows, "  "+strings.Repeat("─", 65))

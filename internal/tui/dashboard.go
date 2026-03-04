@@ -16,7 +16,6 @@ import (
 // Messages
 type tickMsg time.Time
 type servicesUpdatedMsg []*model.Service
-type projectsUpdatedMsg []*model.Project
 type logsUpdatedMsg []*model.LogEntry
 
 // DashboardModel is the main TUI model.
@@ -177,8 +176,8 @@ func (m DashboardModel) View() string {
 	bottomHeight := contentHeight - topHeight - 1
 
 	// Render panels
-	projectPanel := m.renderProjects(leftWidth-2, topHeight)
-	servicePanel := m.renderServices(rightWidth-2, topHeight)
+	projectPanel := m.renderProjects(topHeight)
+	servicePanel := m.renderServices(topHeight)
 	logPanel := m.renderLogs(m.width-2, bottomHeight)
 
 	// Borders for active panel
@@ -186,11 +185,12 @@ func (m DashboardModel) View() string {
 	svcBorder := StyleBorder.Width(rightWidth)
 	logBorder := StyleBorder.Width(m.width - 2)
 
-	if m.activePanel == 0 {
+	switch m.activePanel {
+	case 0:
 		projBorder = projBorder.BorderForeground(ColorPrimary)
-	} else if m.activePanel == 1 {
+	case 1:
 		svcBorder = svcBorder.BorderForeground(ColorPrimary)
-	} else {
+	default:
 		logBorder = logBorder.BorderForeground(ColorPrimary)
 	}
 
@@ -211,13 +211,13 @@ func (m DashboardModel) View() string {
 	)
 }
 
-func (m DashboardModel) renderProjects(width, height int) string {
+func (m DashboardModel) renderProjects(height int) string {
 	title := StyleTitle.Render("PROJECTS")
 	if len(m.projects) == 0 {
 		return title + "\n" + StyleMuted.Render("No projects registered")
 	}
 
-	var lines []string
+	lines := make([]string, 0, len(m.projects)+1)
 	lines = append(lines, title)
 	for i, p := range m.projects {
 		prefix := "  "
@@ -235,13 +235,13 @@ func (m DashboardModel) renderProjects(width, height int) string {
 	return strings.Join(lines, "\n")
 }
 
-func (m DashboardModel) renderServices(width, height int) string {
+func (m DashboardModel) renderServices(height int) string {
 	title := StyleTitle.Render("SERVICE MONITOR")
 	if len(m.services) == 0 {
 		return title + "\n" + StyleMuted.Render("No services registered")
 	}
 
-	var lines []string
+	lines := make([]string, 0, len(m.services)+1)
 	lines = append(lines, title)
 	for _, s := range m.services {
 		icon := StyleStatusDown.Render("[DN]")
