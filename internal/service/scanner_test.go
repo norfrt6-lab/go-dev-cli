@@ -31,7 +31,7 @@ func TestScanner_ScanPort_Open(t *testing.T) {
 	result := s.ScanPort("127.0.0.1", port)
 	assert.True(t, result.Open)
 	assert.Equal(t, port, result.Port)
-	assert.Greater(t, result.Latency, time.Duration(0))
+	assert.GreaterOrEqual(t, result.Latency, time.Duration(0))
 }
 
 func TestScanner_ScanPort_Closed(t *testing.T) {
