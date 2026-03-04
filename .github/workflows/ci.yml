@@ -14,7 +14,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.23'
+          go-version: '1.26'
       - uses: golangci/golangci-lint-action@v6
         with:
           version: latest
@@ -30,7 +30,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.23'
+          go-version: '1.26'
       - run: go test -race -coverprofile=coverage.out ./...
       - uses: codecov/codecov-action@v4
         if: matrix.os == 'ubuntu-latest'
@@ -44,7 +44,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.23'
+          go-version: '1.26'
       - run: go build -o devx .
       - name: Verify binary runs
         run: ./devx version
