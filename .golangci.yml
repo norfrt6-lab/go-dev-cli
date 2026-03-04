@@ -1,0 +1,30 @@
+linters:
+  enable:
+    - govet
+    - errcheck
+    - staticcheck
+    - gosec
+    - gocritic
+    - unparam
+    - prealloc
+    - exportloopref
+
+linters-settings:
+  govet:
+    shadow: true
+  errcheck:
+    check-type-assertions: true
+  gosec:
+    severity: medium
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - errcheck
+        - gosec
+  max-issues-per-linter: 0
+  max-same-issues: 0
+
+run:
+  timeout: 5m
