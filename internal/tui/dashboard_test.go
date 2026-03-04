@@ -33,10 +33,8 @@ func TestDashboard_KeyboardNavigation(t *testing.T) {
 	m.width = 120
 	m.height = 40
 
-	// Tab switches panel
-	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("tab")})
-	// Workaround: "tab" as rune won't match - use tea.KeyTab
-	updated, _ = m.Update(tea.KeyMsg{Type: tea.KeyTab})
+	// Tab switches panel (use tea.KeyTab, not rune)
+	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyTab})
 	dm := updated.(DashboardModel)
 	assert.Equal(t, 2, dm.activePanel)
 
