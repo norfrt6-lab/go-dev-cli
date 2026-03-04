@@ -1,3 +1,4 @@
+// Package database provides SQLite-based persistence for projects, services, and log entries.
 package database
 
 import (
@@ -9,11 +10,13 @@ import (
 	_ "modernc.org/sqlite"
 )
 
+// DB wraps a SQLite database connection with migration support.
 type DB struct {
 	conn *sql.DB
 	path string
 }
 
+// Open creates or opens a SQLite database at the given path with WAL mode enabled.
 func Open(path string) (*DB, error) {
 	dir := filepath.Dir(path)
 	if err := os.MkdirAll(dir, 0o755); err != nil {
@@ -33,6 +36,7 @@ func Open(path string) (*DB, error) {
 	return &DB{conn: conn, path: path}, nil
 }
 
+// OpenMemory creates an in-memory SQLite database with migrations applied. Useful for testing.
 func OpenMemory() (*DB, error) {
 	conn, err := sql.Open("sqlite", ":memory:?_pragma=foreign_keys(ON)")
 	if err != nil {
@@ -48,6 +52,7 @@ func OpenMemory() (*DB, error) {
 	return db, nil
 }
 
+// Close closes the underlying database connection.
 func (d *DB) Close() error {
 	if d.conn != nil {
 		return d.conn.Close()
@@ -55,6 +60,7 @@ func (d *DB) Close() error {
 	return nil
 }
 
+// Conn returns the underlying sql.DB connection.
 func (d *DB) Conn() *sql.DB {
 	return d.conn
 }

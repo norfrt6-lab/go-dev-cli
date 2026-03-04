@@ -2,6 +2,7 @@ package model
 
 import "time"
 
+// Project represents a registered development project with its metadata.
 type Project struct {
 	ID          int64      `json:"id"`
 	Name        string     `json:"name"`

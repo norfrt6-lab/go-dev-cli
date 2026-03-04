@@ -2,17 +2,20 @@ package service
 
 import (
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/norfrt6-lab/go-dev-cli/internal/database"
 	"github.com/norfrt6-lab/go-dev-cli/internal/model"
 )
 
+// ServiceMonitor tracks registered services and performs health checks.
 type ServiceMonitor struct {
 	repo    *database.ServiceRepo
 	scanner *Scanner
 }
 
+// NewServiceMonitor creates a ServiceMonitor backed by the given database.
 func NewServiceMonitor(db *database.DB) *ServiceMonitor {
 	return &ServiceMonitor{
 		repo:    database.NewServiceRepo(db),
@@ -20,6 +23,7 @@ func NewServiceMonitor(db *database.DB) *ServiceMonitor {
 	}
 }
 
+// Add registers a new service for health monitoring.
 func (m *ServiceMonitor) Add(name, host string, port int, healthPath string) (*model.Service, error) {
 	exists, err := m.repo.Exists(host, port)
 	if err != nil {
@@ -60,6 +64,7 @@ func (m *ServiceMonitor) Remove(name string) error {
 	return m.repo.Delete(name)
 }
 
+// CheckHealth performs an HTTP and TCP health check on a named service and returns its status.
 func (m *ServiceMonitor) CheckHealth(name string) (*model.Service, bool, time.Duration, error) {
 	svc, err := m.repo.GetByName(name)
 	if err != nil {
@@ -89,23 +94,28 @@ func (m *ServiceMonitor) CheckHealth(name string) (*model.Service, bool, time.Du
 	return svc, healthy, latency, nil
 }
 
+// CheckAllHealth checks all registered services concurrently and updates their status.
 func (m *ServiceMonitor) CheckAllHealth() ([]*model.Service, error) {
 	services, err := m.repo.List()
 	if err != nil {
 		return nil, err
 	}
 
+	var wg sync.WaitGroup
 	for _, svc := range services {
-		result := m.scanner.ScanPort(svc.Host, svc.Port)
-		var status model.ServiceStatus
-		if result.Open {
-			status = model.StatusUp
-		} else {
-			status = model.StatusDown
-		}
-		_ = m.repo.UpdateStatus(svc.Name, status)
-		svc.Status = status
+		wg.Add(1)
+		go func(s *model.Service) {
+			defer wg.Done()
+			result := m.scanner.ScanPort(s.Host, s.Port)
+			if result.Open {
+				s.Status = model.StatusUp
+			} else {
+				s.Status = model.StatusDown
+			}
+			_ = m.repo.UpdateStatus(s.Name, s.Status)
+		}(svc)
 	}
+	wg.Wait()
 
 	return services, nil
 }

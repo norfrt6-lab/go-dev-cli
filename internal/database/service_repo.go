@@ -8,10 +8,12 @@ import (
 	"github.com/norfrt6-lab/go-dev-cli/internal/model"
 )
 
+// ServiceRepo provides CRUD operations for monitored services in SQLite.
 type ServiceRepo struct {
 	db *DB
 }
 
+// NewServiceRepo creates a new ServiceRepo using the given database connection.
 func NewServiceRepo(db *DB) *ServiceRepo {
 	return &ServiceRepo{db: db}
 }
@@ -104,7 +106,7 @@ func (r *ServiceRepo) scanService(row *sql.Row) (*model.Service, error) {
 	err := row.Scan(&s.ID, &projectID, &s.Name, &s.Host, &s.Port, &s.HealthPath, &s.Status, &lastCheck, &createdAt)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, fmt.Errorf("service not found")
+			return nil, fmt.Errorf("service not found; run 'devx service list' to see registered services")
 		}
 		return nil, fmt.Errorf("failed to scan service: %w", err)
 	}

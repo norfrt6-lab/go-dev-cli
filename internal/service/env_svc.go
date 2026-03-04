@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 
@@ -13,7 +14,11 @@ import (
 
 const envDir = ".devx/envs"
 
-// EnvManager handles environment profile operations.
+// validProfileName allows only alphanumeric, hyphens, underscores, and dots.
+var validProfileName = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9._-]*$`)
+
+// EnvManager handles environment profile operations within a project directory.
+// Profiles are stored as .env files under .devx/envs/.
 type EnvManager struct {
 	projectDir string
 }
@@ -26,6 +31,21 @@ func NewEnvManager(projectDir string) *EnvManager {
 // envsDir returns the path to the envs directory.
 func (m *EnvManager) envsDir() string {
 	return filepath.Join(m.projectDir, envDir)
+}
+
+// validateProfileName ensures the profile name is safe and cannot be used
+// for path traversal attacks.
+func validateProfileName(name string) error {
+	if name == "" {
+		return fmt.Errorf("profile name cannot be empty")
+	}
+	if !validProfileName.MatchString(name) {
+		return fmt.Errorf("invalid profile name %q: must contain only alphanumeric characters, hyphens, underscores, and dots", name)
+	}
+	if strings.Contains(name, "..") {
+		return fmt.Errorf("invalid profile name %q: must not contain '..'", name)
+	}
+	return nil
 }
 
 // List returns all available environment profile names.
@@ -55,9 +75,15 @@ func (m *EnvManager) List() ([]string, error) {
 
 // Show reads and returns the env profile with the given name.
 func (m *EnvManager) Show(name string) (*model.EnvProfile, error) {
+	if err := validateProfileName(name); err != nil {
+		return nil, err
+	}
 	path := filepath.Join(m.envsDir(), name+".env")
 	vars, err := parseEnvFile(path)
 	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, fmt.Errorf("profile %q not found; run 'devx env list' to see available profiles", name)
+		}
 		return nil, fmt.Errorf("read profile %q: %w", name, err)
 	}
 	return &model.EnvProfile{
@@ -67,8 +93,11 @@ func (m *EnvManager) Show(name string) (*model.EnvProfile, error) {
 	}, nil
 }
 
-// Switch symlinks .env in the project root to the selected profile.
+// Switch copies the selected profile as .env in the project root.
 func (m *EnvManager) Switch(name string) error {
+	if err := validateProfileName(name); err != nil {
+		return err
+	}
 	src := filepath.Join(m.envsDir(), name+".env")
 	if _, err := os.Stat(src); err != nil {
 		return fmt.Errorf("profile %q not found: %w", name, err)
@@ -132,8 +161,9 @@ func (m *EnvManager) Diff(nameA, nameB string) (added, removed, changed []string
 	return added, removed, changed, nil
 }
 
-// Export returns export statements for the given profile.
+// Export returns shell export statements for the given profile.
 func (m *EnvManager) Export(name string) (string, error) {
+	// Show already validates the name
 	profile, err := m.Show(name)
 	if err != nil {
 		return "", err

@@ -10,10 +10,12 @@ import (
 	"github.com/norfrt6-lab/go-dev-cli/internal/model"
 )
 
+// ProjectService manages project registration, listing, and editor launching.
 type ProjectService struct {
 	repo *database.ProjectRepo
 }
 
+// NewProjectService creates a ProjectService backed by the given database.
 func NewProjectService(db *database.DB) *ProjectService {
 	return &ProjectService{
 		repo: database.NewProjectRepo(db),

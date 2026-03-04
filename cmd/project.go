@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -36,8 +37,11 @@ var projectAddCmd = &cobra.Command{
 		}
 
 		info, err := os.Stat(absPath)
-		if err != nil || !info.IsDir() {
-			return fmt.Errorf("path does not exist or is not a directory: %s", absPath)
+		if err != nil {
+			return fmt.Errorf("path not found: %s\n  Ensure the directory exists before running 'devx project add'", absPath)
+		}
+		if !info.IsDir() {
+			return fmt.Errorf("path is not a directory: %s\n  Provide a project directory, not a file", absPath)
 		}
 
 		name, _ := cmd.Flags().GetString("name")
@@ -64,8 +68,8 @@ var projectAddCmd = &cobra.Command{
 }
 
 var projectListCmd = &cobra.Command{
-	Use:   "list",
-	Short: "List all registered projects",
+	Use:     "list",
+	Short:   "List all registered projects",
 	Aliases: []string{"ls"},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		svc := service.NewProjectService(getDB())
@@ -77,6 +81,11 @@ var projectListCmd = &cobra.Command{
 		if len(projects) == 0 {
 			fmt.Println("No projects registered. Use 'devx project add' to register one.")
 			return nil
+		}
+
+		output, _ := cmd.Flags().GetString("output")
+		if output == "json" {
+			return json.NewEncoder(os.Stdout).Encode(projects)
 		}
 
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
@@ -196,6 +205,7 @@ func init() {
 	projectAddCmd.Flags().StringP("description", "d", "", "project description")
 	projectCmd.AddCommand(projectAddCmd)
 
+	projectListCmd.Flags().String("output", "table", "output format (table, json)")
 	projectCmd.AddCommand(projectListCmd)
 	projectCmd.AddCommand(projectRemoveCmd)
 	projectCmd.AddCommand(projectInfoCmd)

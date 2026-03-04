@@ -26,7 +26,9 @@ var rootCmd = &cobra.Command{
 Manage local dev environments, scaffold projects, monitor running services,
 and aggregate logs. All from your terminal.`,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-		if cmd.Name() == "version" || cmd.Name() == "completion" || cmd.Name() == "help" {
+		// Skip DB init for commands that don't need it
+		switch cmd.Name() {
+		case "version", "completion", "help", "bash", "zsh", "fish", "powershell":
 			return nil
 		}
 

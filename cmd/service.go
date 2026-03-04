@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"text/tabwriter"
@@ -51,7 +52,7 @@ var serviceAddCmd = &cobra.Command{
 		healthPath, _ := cmd.Flags().GetString("health-path")
 
 		if port == 0 {
-			return fmt.Errorf("--port is required")
+			return fmt.Errorf("--port is required (e.g., devx service add %s --port 3000)", name)
 		}
 
 		monitor := service.NewServiceMonitor(getDB())
@@ -88,6 +89,11 @@ var serviceListCmd = &cobra.Command{
 		if len(services) == 0 {
 			fmt.Println("No services registered. Use 'devx service add' to register one.")
 			return nil
+		}
+
+		output, _ := cmd.Flags().GetString("output")
+		if output == "json" {
+			return json.NewEncoder(os.Stdout).Encode(services)
 		}
 
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
@@ -172,6 +178,7 @@ func init() {
 	serviceCmd.AddCommand(serviceAddCmd)
 
 	serviceListCmd.Flags().BoolP("check", "c", false, "run health checks before listing")
+	serviceListCmd.Flags().String("output", "table", "output format (table, json)")
 	serviceCmd.AddCommand(serviceListCmd)
 
 	serviceCmd.AddCommand(serviceHealthCmd)

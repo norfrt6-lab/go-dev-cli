@@ -206,9 +206,24 @@ func TestStripQuotes(t *testing.T) {
 	assert.Equal(t, "x", stripQuotes("x"))
 }
 
-func TestMaskValue(t *testing.T) {
-	// maskValue is in cmd package; test the internal function indirectly
-	// Test varsToMap helper
+func TestVarsToMap(t *testing.T) {
 	m := varsToMap(nil)
 	assert.Empty(t, m)
+}
+
+func TestValidateProfileName(t *testing.T) {
+	// Valid names
+	assert.NoError(t, validateProfileName("dev"))
+	assert.NoError(t, validateProfileName("production"))
+	assert.NoError(t, validateProfileName("staging-us-east"))
+	assert.NoError(t, validateProfileName("v1.0"))
+	assert.NoError(t, validateProfileName("my_profile"))
+
+	// Invalid names
+	assert.Error(t, validateProfileName(""))
+	assert.Error(t, validateProfileName("../etc/passwd"))
+	assert.Error(t, validateProfileName(".."))
+	assert.Error(t, validateProfileName("/root"))
+	assert.Error(t, validateProfileName("has space"))
+	assert.Error(t, validateProfileName(".hidden"))
 }
