@@ -80,7 +80,7 @@ func (s *LogService) TailFile(ctx context.Context, path string, follow bool, onE
 
 	go func() {
 		for entry := range ch {
-			if err := s.repo.Insert(entry); err != nil {
+			if insertErr := s.repo.Insert(entry); insertErr != nil {
 				continue
 			}
 			onEntry(entry)
