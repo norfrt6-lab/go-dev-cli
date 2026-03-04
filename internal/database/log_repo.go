@@ -8,10 +8,12 @@ import (
 	"github.com/norfrt6-lab/go-dev-cli/internal/model"
 )
 
+// LogRepo provides CRUD and full-text search operations for log entries in SQLite.
 type LogRepo struct {
 	db *DB
 }
 
+// NewLogRepo creates a new LogRepo using the given database connection.
 func NewLogRepo(db *DB) *LogRepo {
 	return &LogRepo{db: db}
 }
@@ -59,6 +61,7 @@ func (r *LogRepo) InsertBatch(entries []*model.LogEntry) error {
 	return tx.Commit()
 }
 
+// LogQuery specifies filters for querying log entries.
 type LogQuery struct {
 	Source string
 	Level  model.LogLevel
@@ -96,10 +99,12 @@ func (r *LogRepo) Query(q LogQuery) ([]*model.LogEntry, error) {
 	query += " ORDER BY timestamp DESC"
 
 	if q.Limit > 0 {
-		query += fmt.Sprintf(" LIMIT %d", q.Limit)
+		query += " LIMIT ?"
+		args = append(args, q.Limit)
 	}
 	if q.Offset > 0 {
-		query += fmt.Sprintf(" OFFSET %d", q.Offset)
+		query += " OFFSET ?"
+		args = append(args, q.Offset)
 	}
 
 	rows, err := r.db.conn.Query(query, args...)

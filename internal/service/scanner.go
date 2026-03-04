@@ -9,16 +9,19 @@ import (
 	"time"
 )
 
+// PortResult holds the result of scanning a single TCP port.
 type PortResult struct {
 	Port    int
 	Open    bool
 	Latency time.Duration
 }
 
+// Scanner performs concurrent TCP port scanning with configurable timeouts.
 type Scanner struct {
 	timeout time.Duration
 }
 
+// NewScanner creates a Scanner with the given connection timeout.
 func NewScanner(timeout time.Duration) *Scanner {
 	if timeout == 0 {
 		timeout = 2 * time.Second

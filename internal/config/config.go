@@ -1,3 +1,5 @@
+// Package config handles loading and providing application configuration from
+// config files, environment variables, and defaults.
 package config
 
 import (
@@ -7,6 +9,7 @@ import (
 	"github.com/spf13/viper"
 )
 
+// Config holds the application configuration values.
 type Config struct {
 	Editor           string   `mapstructure:"editor"`
 	DefaultHealthPath string  `mapstructure:"default_health_path"`
@@ -17,6 +20,7 @@ type Config struct {
 	DataDir          string   `mapstructure:"data_dir"`
 }
 
+// DefaultConfig returns a Config with sensible defaults.
 func DefaultConfig() *Config {
 	home, _ := os.UserHomeDir()
 	dataDir := filepath.Join(home, ".devx")
@@ -32,6 +36,8 @@ func DefaultConfig() *Config {
 	}
 }
 
+// Load reads configuration from the given file path (or the default location),
+// merging with environment variables prefixed with DEVX_.
 func Load(cfgFile string) (*Config, error) {
 	cfg := DefaultConfig()
 
@@ -74,6 +80,7 @@ func Load(cfgFile string) (*Config, error) {
 	return cfg, nil
 }
 
+// GetEditor returns the configured editor, falling back to $EDITOR or "code".
 func GetEditor() string {
 	editor := viper.GetString("editor")
 	if editor == "" {

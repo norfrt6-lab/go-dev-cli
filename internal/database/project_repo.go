@@ -8,10 +8,12 @@ import (
 	"github.com/norfrt6-lab/go-dev-cli/internal/model"
 )
 
+// ProjectRepo provides CRUD operations for projects in SQLite.
 type ProjectRepo struct {
 	db *DB
 }
 
+// NewProjectRepo creates a new ProjectRepo using the given database connection.
 func NewProjectRepo(db *DB) *ProjectRepo {
 	return &ProjectRepo{db: db}
 }
@@ -95,7 +97,7 @@ func (r *ProjectRepo) scanProject(row *sql.Row) (*model.Project, error) {
 	err := row.Scan(&p.ID, &p.Name, &p.Path, &p.Language, &p.Description, &createdAt, &updatedAt, &lastOpened)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, fmt.Errorf("project not found")
+			return nil, fmt.Errorf("project not found; run 'devx project list' to see registered projects")
 		}
 		return nil, fmt.Errorf("failed to scan project: %w", err)
 	}

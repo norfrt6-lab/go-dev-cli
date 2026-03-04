@@ -1,3 +1,4 @@
+// Package service implements the business logic layer for devx.
 package service
 
 import (
@@ -8,10 +9,12 @@ import (
 	"github.com/norfrt6-lab/go-dev-cli/internal/model"
 )
 
+// LogService provides log aggregation, tailing, and search functionality.
 type LogService struct {
 	repo *database.LogRepo
 }
 
+// NewLogService creates a LogService backed by the given database.
 func NewLogService(db *database.DB) *LogService {
 	return &LogService{
 		repo: database.NewLogRepo(db),
@@ -80,9 +83,8 @@ func (s *LogService) TailFile(ctx context.Context, path string, follow bool, onE
 
 	go func() {
 		for entry := range ch {
-			if insertErr := s.repo.Insert(entry); insertErr != nil {
-				continue
-			}
+			// Best-effort store; deliver to callback regardless of DB errors
+			_ = s.repo.Insert(entry)
 			onEntry(entry)
 		}
 	}()
