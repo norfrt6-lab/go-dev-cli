@@ -45,6 +45,25 @@ var migrations = []string{
 		version    INTEGER PRIMARY KEY,
 		applied_at TEXT    NOT NULL DEFAULT (datetime('now'))
 	);`,
+
+	// Migration 2: FTS5 full-text search for log entries
+	`CREATE VIRTUAL TABLE IF NOT EXISTS log_entries_fts USING fts5(
+		source,
+		level,
+		message,
+		content='log_entries',
+		content_rowid='id'
+	);
+
+	CREATE TRIGGER IF NOT EXISTS log_entries_ai AFTER INSERT ON log_entries BEGIN
+		INSERT INTO log_entries_fts(rowid, source, level, message)
+		VALUES (new.id, new.source, new.level, new.message);
+	END;
+
+	CREATE TRIGGER IF NOT EXISTS log_entries_ad AFTER DELETE ON log_entries BEGIN
+		INSERT INTO log_entries_fts(log_entries_fts, rowid, source, level, message)
+		VALUES ('delete', old.id, old.source, old.level, old.message);
+	END;`,
 }
 
 func (d *DB) Migrate() error {
