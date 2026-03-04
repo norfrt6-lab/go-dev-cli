@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 
 	"github.com/spf13/cobra"
@@ -70,12 +69,4 @@ func init() {
 
 func getDB() *database.DB {
 	return db
-}
-
-func getDataDir() string {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return ".devx"
-	}
-	return filepath.Join(home, ".devx")
 }

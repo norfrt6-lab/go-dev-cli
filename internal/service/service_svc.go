@@ -103,7 +103,7 @@ func (m *ServiceMonitor) CheckAllHealth() ([]*model.Service, error) {
 		} else {
 			status = model.StatusDown
 		}
-		m.repo.UpdateStatus(svc.Name, status)
+		_ = m.repo.UpdateStatus(svc.Name, status)
 		svc.Status = status
 	}
 

@@ -51,8 +51,8 @@ func TestScaffolder_Generate_GoCLI(t *testing.T) {
 	expectedFiles := []string{"main.go", "go.mod", "Makefile", ".gitignore"}
 	for _, f := range expectedFiles {
 		path := filepath.Join(outputDir, f)
-		_, err := os.Stat(path)
-		assert.NoError(t, err, "file %s should exist", f)
+		_, statErr := os.Stat(path)
+		assert.NoError(t, statErr, "file %s should exist", f)
 	}
 
 	// Verify template variable substitution

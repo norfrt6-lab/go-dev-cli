@@ -107,7 +107,7 @@ func CheckHealth(host string, port int, healthPath string, timeout time.Duration
 
 	// Send a minimal HTTP GET request
 	request := fmt.Sprintf("GET %s HTTP/1.1\r\nHost: %s\r\nConnection: close\r\n\r\n", healthPath, host)
-	conn.SetDeadline(time.Now().Add(timeout))
+	_ = conn.SetDeadline(time.Now().Add(timeout))
 	_, err = conn.Write([]byte(request))
 	if err != nil {
 		conn.Close()
