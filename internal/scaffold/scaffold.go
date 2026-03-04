@@ -113,7 +113,7 @@ func (s *Scaffolder) processDir(srcDir, destDir string, data TemplateData) error
 				return fmt.Errorf("failed to execute template '%s': %w", srcPath, err)
 			}
 		} else {
-			if err := os.WriteFile(destPath, content, 0o644); err != nil {
+			if err := os.WriteFile(destPath, content, 0o600); err != nil {
 				return fmt.Errorf("failed to write file '%s': %w", destPath, err)
 			}
 		}

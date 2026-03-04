@@ -57,12 +57,12 @@ func (d *DB) Migrate() error {
 		}
 
 		if _, err := tx.Exec(migrations[i]); err != nil {
-			tx.Rollback()
+			_ = tx.Rollback()
 			return fmt.Errorf("migration %d failed: %w", i+1, err)
 		}
 
 		if _, err := tx.Exec("INSERT INTO schema_migrations (version) VALUES (?)", i+1); err != nil {
-			tx.Rollback()
+			_ = tx.Rollback()
 			return fmt.Errorf("failed to record migration %d: %w", i+1, err)
 		}
 
@@ -76,7 +76,7 @@ func (d *DB) Migrate() error {
 
 func (d *DB) getCurrentVersion() int {
 	// Create schema_migrations if it doesn't exist (bootstrap)
-	d.conn.Exec(`CREATE TABLE IF NOT EXISTS schema_migrations (
+	_, _ = d.conn.Exec(`CREATE TABLE IF NOT EXISTS schema_migrations (
 		version    INTEGER PRIMARY KEY,
 		applied_at TEXT    NOT NULL DEFAULT (datetime('now'))
 	)`)
